@@ -4,25 +4,6 @@ module.exports = function(app, swig, gestorBD) {
         res.send(String(respuesta));
     });
 
-    app.get("/canciones", function(req, res) {
-        let canciones = [ {
-            "nombre" : "Blank space",
-            "precio" : "1.2"
-        },{
-            "nombre" : "See you again",
-            "precio" : "1.3"
-        },{
-            "nombre" : "Uptown funk",
-            "precio" : "1.1"
-        }];
-        let respuesta = swig.renderFile('views/btienda.html',{
-            vendedor : 'Tienda de canciones',
-            canciones : canciones
-        });
-
-        res.send(respuesta);
-    });
-
     app.get('/canciones/agregar', function (req, res) {
         if ( req.session.usuario == null){
             res.redirect("/tienda");
@@ -37,15 +18,33 @@ module.exports = function(app, swig, gestorBD) {
 
     app.get('/cancion/:id', function (req, res) {
         let criterio = { "_id" :  gestorBD.mongo.ObjectID(req.params.id) };
+        let respuesta = swig.renderFile('views/bcancion.html',
+            {
+
+            });
         gestorBD.obtenerCanciones(criterio,function(canciones){
             if ( canciones == null ){
                 res.send("Error al recuperar la canción.");
             } else {
-                let respuesta = swig.renderFile('views/bcancion.html',
-                    {
-                        cancion : canciones[0]
-                    });
-                res.send(respuesta);
+                let criterioComentario = { "cancion_id" : gestorBD.mongo.ObjectID(req.params.id) };
+
+                gestorBD.obtenerComentarios(criterioComentario, function (comentarios) {
+                    if (comentarios == null){
+                        respuesta = swig.renderFile('views/bcancion.html',
+                            {
+                                cancion : canciones[0]
+                            });
+                        res.send(respuesta);
+                    }
+                    else{
+                        respuesta = swig.renderFile('views/bcancion.html',
+                            {
+                                cancion : canciones[0],
+                                comentarios: comentarios
+                            });
+                        res.send(respuesta);
+                    }
+                })
             }
         });
     });
