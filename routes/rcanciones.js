@@ -61,8 +61,9 @@ module.exports = function (app, swig, gestorBD) {
                     }
                 });
             }
-            else
+            else {
                 next(new Error("Error en la compra o canción ya comprada"));
+            }
         })
     });
 
